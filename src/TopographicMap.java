@@ -4,8 +4,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class TopographicMap {
-    private int[][] map;
-    private int rows, cols;
+    private final int[][] map;
+    private final int rows, cols;
 
     public TopographicMap(String filename) throws IOException {
         List<String> lines = Files.readAllLines(Paths.get(filename));
@@ -31,5 +31,9 @@ public class TopographicMap {
 
     public int getCols() {
         return cols;
+    }
+
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && x < rows && y >= 0 && y < cols;
     }
 }

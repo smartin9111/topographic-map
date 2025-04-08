@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class TrailFinder {
-    private static final int[] dx = {-1, 1, 0, 0};
+    private static final int[] dx = {-1, 1, 0, 0}; // fel, le, bal, jobb
     private static final int[] dy = {0, 0, -1, 1};
     private final TopographicMap map;
 
@@ -9,49 +9,44 @@ public class TrailFinder {
         this.map = map;
     }
 
-    public int calculateTotalScore() {
-        int totalScore = 0;
+    public int calculateTotalRating() {
+        int totalRating = 0;
+
         for (int i = 0; i < map.getRows(); i++) {
             for (int j = 0; j < map.getCols(); j++) {
                 if (map.getValue(i, j) == 0) {
-                    totalScore += bfs(i, j);
+                    boolean[][] visited = new boolean[map.getRows()][map.getCols()];
+                    totalRating += countPaths(i, j, visited);
                 }
             }
         }
-        return totalScore;
+
+        return totalRating;
     }
 
-    private int bfs(int startX, int startY) {
-        Queue<Node> queue = new LinkedList<>();
-        Set<String> visited = new HashSet<>();
-        Set<String> foundNines = new HashSet<>();
+    private int countPaths(int x, int y, boolean[][] visited) {
+        int currentHeight = map.getValue(x, y);
+        visited[x][y] = true;
 
-        queue.add(new Node(startX, startY, 0));
-        visited.add(startX + "," + startY);
+        if (currentHeight == 9) {
+            visited[x][y] = false;
+            return 1;
+        }
 
-        while (!queue.isEmpty()) {
-            Node current = queue.poll();
+        int total = 0;
+        for (int dir = 0; dir < 4; dir++) {
+            int nx = x + dx[dir];
+            int ny = y + dy[dir];
 
-            for (int dir = 0; dir < 4; dir++) {
-                int nx = current.x + dx[dir];
-                int ny = current.y + dy[dir];
-
-                if (nx >= 0 && nx < map.getRows() && ny >= 0 && ny < map.getCols()) {
-                    int expectedHeight = current.height + 1;
-                    int nextHeight = map.getValue(nx, ny);
-                    String key = nx + "," + ny;
-
-                    if (nextHeight == expectedHeight && !visited.contains(key)) {
-                        if (nextHeight == 9) {
-                            foundNines.add(key);
-                        }
-                        queue.add(new Node(nx, ny, nextHeight));
-                        visited.add(key);
-                    }
+            if (map.inBounds(nx, ny) && !visited[nx][ny]) {
+                int nextHeight = map.getValue(nx, ny);
+                if (nextHeight == currentHeight + 1) {
+                    total += countPaths(nx, ny, visited);
                 }
             }
         }
 
-        return foundNines.size();
+        visited[x][y] = false;
+        return total;
     }
 }
